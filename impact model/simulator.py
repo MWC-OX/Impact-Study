@@ -5,12 +5,12 @@ class Simulator:
 
     def __init__(self):
         self.data = []
-        
+
 
     def simulate_person(self, upper=80, lower=20, dt=1):
 
         subject = Person.generate_person(upper, lower)
-        result = {}
+        result = {"age": [], "state": [], "risk score": [], "bmi": []}
 
         result["race"] = subject.get_race()
 
