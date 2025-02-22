@@ -149,7 +149,8 @@ class Person:
         brca2 = generate_bcra(2, ethnicity)
         relatives = generate_relatives()
 
-
+    def get_state(self):
+        raise NotImplementedError
 
     
 
