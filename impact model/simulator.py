@@ -1,5 +1,5 @@
 from person import Person
-
+from time import time
 
 class Simulator:
 
@@ -31,10 +31,15 @@ class Simulator:
     def simulate_population(self, n=1000, upper=80, lower=20, dt=1):
 
         self.clear_data()
+        tic = time()
 
-        for _ in range(n):
+        for x in range(n):
             self.simulate_person(upper, lower, dt)
 
+            if x % 100 == 0:
+                print(f"Simulated {x} people")
+
+        print(f"Simulation completed in {time() - tic:.2f} seconds")
         return self.data
     
     def clear_data(self):
