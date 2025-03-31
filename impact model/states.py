@@ -158,11 +158,6 @@ class state:
             self.state = "dead - cancer"
             return
 
-        # Progression to regional or distant stage
-            progression_probability = 0.05 if years_in_stage == 0 else 0.10  # Example probabilities
-        if random.random() < progression_probability:
-            self.state = "regional"
-
     def _state_regional(self, risk3):
         # Get the survival probability for the current year in the regional stage
         years_in_stage = int(self.time_in_state)
@@ -175,11 +170,6 @@ class state:
         if random.random() > survival_probability:
             self.state = "dead - cancer"
             return
-
-        # Progression to distant stage
-        progression_probability = 0.10 if years_in_stage == 0 else 0.20  # Example probabilities
-        if random.random() < progression_probability:
-            self.state = "cancerous - late stage"
 
     def _state_cancerous_late(self, risk4):
         # Use survival probabilities for distant cancer
