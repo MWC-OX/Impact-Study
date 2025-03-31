@@ -57,11 +57,11 @@ class state:
         elif self.state == "DCIS":
             self._state_DCIS(risk_factor_3)
         elif self.state == "localized":
-            self._state_localized(risk_factor_3)
+            self._cancerous_invasive("localized")
         elif self.state == "regional":
-            self._state_regional(risk_factor_3)
+            self._cancerous_invasive("regional")
         elif self.state == "distant":
-            self._state_distant(risk_factor_4)
+            self._cancerous_invasive("distant")
         elif self.state == "dead - cancer" or self.state == "dead - other":
             pass  # No transition from dead states
         else:
@@ -141,46 +141,17 @@ class state:
 
         # Remain in DCIS if no progression
 
-    def _state_cancerous_early(self, risk3):
-        # Determine if the cancer is localized or regional
-        cancer_type = random.choices(["localized", "regional"], weights=[0.724, 0.276])[0]  # Weights from SEER dataset
-
-        # Get the survival probability for the current year in the early stage
+    def _cancerous_invasive(self, cancer_type):
+        """
+        Handles the logic for invasive cancer states (localized, regional, distant).
+        Determines survival based on the survival probabilities for the given cancer type.
+        """
+        # Get the survival probability for the current year in the given cancer stage
         years_in_stage = int(self.time_in_state)
         if years_in_stage < len(survival_probabilities[cancer_type]):
             survival_probability = survival_probabilities[cancer_type][years_in_stage]
         else:
-# Use the last available survival probability for years beyond 5
-            survival_probability = survival_probabilities[cancer_type][-1]
-
-        # Predict mortality
-        if random.random() > survival_probability:
-            self.state = "dead - cancer"
-            return
-
-    def _state_regional(self, risk3):
-        # Get the survival probability for the current year in the regional stage
-        years_in_stage = int(self.time_in_state)
-        if years_in_stage < len(survival_probabilities["regional"]):
-            survival_probability = survival_probabilities["regional"][years_in_stage]
-        else:
-            survival_probability = survival_probabilities["regional"][-1]
-
-        # Predict mortality
-        if random.random() > survival_probability:
-            self.state = "dead - cancer"
-            return
-
-    def _state_cancerous_late(self, risk4):
-        # Use survival probabilities for distant cancer
-        cancer_type = "distant"  # Late-stage cancer corresponds to "distant"
-
-        # Get the survival probability for the current year in the late stage
-        years_in_stage = int(self.time_in_state)
-        if years_in_stage < len(survival_probabilities[cancer_type]):
-            survival_probability = survival_probabilities[cancer_type][years_in_stage]
-        else:
-# Use the last available survival probability for years beyond 5
+            # Use the last available survival probability for years beyond the data
             survival_probability = survival_probabilities[cancer_type][-1]
 
         # Predict mortality
