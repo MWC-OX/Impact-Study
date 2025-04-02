@@ -1,6 +1,6 @@
 # Import functions here
 import numpy as np
-from gail_model import gail_model_risk
+from updated_gail import get_gail_probability
 import random
 from stage_mortality_data import survival_probabilities
 
@@ -90,14 +90,12 @@ class state:
 
     def _state_healthy(self, risk1):
         # Call the Gail Model to get the risk of developing breast cancer
-        risk = gail_model_risk(
+        risk = get_gail_probability(
             age=risk1['age'],
             age_at_menarche=risk1['age_at_menarche'],
-            age_at_first_birth=risk1['age_at_first_birth'],
-            num_first_degree_relatives=risk1['num_first_degree_relatives'],
             num_biopsies=risk1['num_biopsies'],
-            atypical_hyperplasia=risk1['atypical_hyperplasia'],
-            race=risk1['race']
+            age_at_first_birth=risk1['age_at_first_birth'],
+            num_first_degree_relatives=risk1['num_first_degree_relatives']
         )
         
         # Generate a single random number
