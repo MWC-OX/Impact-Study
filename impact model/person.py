@@ -1,4 +1,6 @@
 import numpy as np
+from states import state
+from life_table_data import death_p
 
 def generate_age(lower, upper):
     return round(np.random.uniform(low=lower, high=upper))
@@ -135,7 +137,9 @@ class Person:
         self.bcra1 = bcra1 # done
         self.bcra2 = bcra2 # done
         self.relatives = relatives #done
+        self.biopsies = 0
         self.b_cancer_costs = 0
+        self.state = state(self.age, death_p())
     
     @classmethod
     def generate_person(cls, lower, upper):
@@ -151,10 +155,21 @@ class Person:
         return cls(age, menopause, menarche, ethnicity, chld_b, hrt, brca1, brca2, relatives)
 
     def get_state(self):
-        raise NotImplementedError
+        return self.state.state
 
     def is_menopausal(self):
         return self.age > self.menopause
+    
+    def tic(self, dt=1):
+        self.age += dt
+        risks = {"age": self.age, 
+                 "age_at_menarche": self.menarche, 
+                 "num_biopsies": self.biopsies, 
+                 "age_at_first_birth": self.chld_b, 
+                 "num_first_degree_relatives": self.relatives
+                 }
+        
+        self.state.check_transistion(risks, self.age, dt)
     
 
 if __name__ == "__main__":

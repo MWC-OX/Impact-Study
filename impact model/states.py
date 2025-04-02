@@ -79,7 +79,7 @@ class state:
             return False  # No data for ages beyond the life table
 
         # Get the probability of dying from other causes at the current age
-        mortality_probability = self.life_table_data[int(self.age), 1]
+        mortality_probability = self.life_table_data[int(self.age)]
 
         # Generate a random number to decide if the person dies
         return random.random() < mortality_probability
@@ -91,11 +91,11 @@ class state:
     def _state_healthy(self, risk1):
         # Call the Gail Model to get the risk of developing breast cancer
         risk = get_gail_probability(
-            age=risk1['age'],
-            age_at_menarche=risk1['age_at_menarche'],
-            num_biopsies=risk1['num_biopsies'],
-            age_at_first_birth=risk1['age_at_first_birth'],
-            num_first_degree_relatives=risk1['num_first_degree_relatives']
+            risk1['age'],
+            risk1['age_at_menarche'],
+            risk1['num_biopsies'],
+            risk1['age_at_first_birth'],
+            risk1['num_first_degree_relatives']
         )
         
         # Generate a single random number

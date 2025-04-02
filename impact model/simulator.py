@@ -12,16 +12,19 @@ class Simulator:
         subject = Person.generate_person(upper, lower)
         result = {"age": [], "state": [], "risk score": [], "bmi": []}
 
-        result["race"] = subject.get_race()
+        result["race"] = subject.ethn
 
-        while subject.get_state() != "DEAD":
+        while subject.get_state() not in ["dead - cancer", "dead - other"]:
 
-            result["age"].append(subject.get_age())
+            result["age"].append(subject.age)
             result["state"].append(subject.get_state())
-            result["risk score"].append(subject.get_risk_score())
-            result["bmi"].append(subject.get_bmi())
+            # result["risk score"].append(subject.get_risk_score())
+            # result["bmi"].append(subject.get_bmi())
 
             subject.tic(dt)
+            
+        result["age"].append(subject.age)
+        result["state"].append(subject.get_state())
         
         result["costs"] = subject.b_cancer_costs
 
@@ -45,5 +48,9 @@ class Simulator:
     def clear_data(self):
         self.data = []
 
+if __name__ == "__main__":
+    sim = Simulator()
+    sim.simulate_person(30, 30.1)
+    print(sim.data)
     
 
