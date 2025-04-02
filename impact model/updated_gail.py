@@ -9,12 +9,12 @@ def get_gail_probability(age, menarche_age, num_biopsies, first_live_birth_age, 
 
     p10 = get_probability(age, r0, r10) / 100
 
+    # https://pmc.ncbi.nlm.nih.gov/articles/PMC4395818/
 
     p1 = 1 - (1-p10)**0.1
-
     return p1
 
 if __name__ == "__main__":
-    risk = get_gail_probability(age=65, menarche_age=13, num_biopsies=2, first_live_birth_age=29, num_relatives=1)
-    print(f"1 year risk of breast cancer is {risk*100:.2f}%")
+    risk = get_gail_probability(age=70, menarche_age=13, num_biopsies=0, first_live_birth_age=25, num_relatives=0)
+    print(f"5 year risk of breast cancer is {risk*100:.2f}%")
 
