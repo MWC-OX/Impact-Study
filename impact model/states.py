@@ -39,23 +39,20 @@ class state:
 
     # Ran after aging people
     # should take all relevant risk factors as arguments
-    def check_transistion(self, dt,
-            risk_factor_1, risk_factor_2,
-            risk_factor_3, risk_factor_4
-    ):
+    def check_transistion(self, risks, age, dt=1):
 
                 # used for checking if state changes
         current = self.state
 
         # increases spent time in current state
         self.time_in_state += dt
-        self.age += dt  # Increment age by the time step
+        self.age = age  # Increment age by the time step
 
         # Logic to check state
         if self.state == "healthy":
-            self._state_healthy(risk_factor_1, risk_factor_2)
+            self._state_healthy(risks)
         elif self.state == "DCIS":
-            self._state_DCIS(risk_factor_3)
+            self._state_DCIS()
         elif self.state == "localized":
             self._cancerous_invasive("localized")
         elif self.state == "regional":
@@ -91,7 +88,7 @@ class state:
 # replace _state_1 with whatever the states should be called
     # and risk1 with risk factors that are parsed in 
 
-    def _state_healthy(self, risk1, risk2):
+    def _state_healthy(self, risk1):
         # Call the Gail Model to get the risk of developing breast cancer
         risk = gail_model_risk(
             age=risk1['age'],
@@ -121,7 +118,7 @@ class state:
             else:  # 17% chance of distant
                 self.state = "distant"
     
-    def _state_DCIS(self, risk3):
+    def _state_DCIS(self):
         # DCIS progression logic
         years_in_stage = int(self.time_in_state)
 
