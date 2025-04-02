@@ -123,17 +123,15 @@ def generate_HRT(menopause):
 class Person:
 
     def __init__(
-            self, age, menopause, menarche, b_density,
-            ethn, chld_b, hrt, bmi, bcra1, bcra2, relatives
+            self, age, menopause, menarche,
+            ethn, chld_b, hrt, bcra1, bcra2, relatives
         ):
         self.age = age # done
         self.menopause = menopause # done
         self.menarche = menarche # done
-        self.b_density = b_density
         self.ethn = ethn # done
         self.chld_b = chld_b # done
         self.hrt = hrt # done
-        self.bmi = bmi 
         self.bcra1 = bcra1 # done
         self.bcra2 = bcra2 # done
         self.relatives = relatives #done
@@ -148,12 +146,23 @@ class Person:
         brca1 = generate_bcra(1, ethnicity)
         brca2 = generate_bcra(2, ethnicity)
         relatives = generate_relatives()
+        chld_b = generate_childbirth()
+        hrt = generate_HRT(menopause)
+        return cls(age, menopause, menarche, ethnicity, chld_b, hrt, brca1, brca2, relatives)
 
     def get_state(self):
         raise NotImplementedError
 
-    
-
     def is_menopausal(self):
         return self.age > self.menopause
+    
+
+if __name__ == "__main__":
+    e = Person.generate_person(30, 30.1)
+    print(f"Age: {e.age}")
+    print(f"ethnicity: {e.ethn}")
+    print(f"first child birth: {e.chld_b}")
+    print(f"menarche: {e.menarche}")
+
+
     
