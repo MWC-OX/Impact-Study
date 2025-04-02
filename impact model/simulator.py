@@ -22,7 +22,7 @@ class Simulator:
             # result["bmi"].append(subject.get_bmi())
 
             subject.tic(dt)
-            
+
         result["age"].append(subject.age)
         result["state"].append(subject.get_state())
         
@@ -50,7 +50,21 @@ class Simulator:
 
 if __name__ == "__main__":
     sim = Simulator()
-    sim.simulate_person(30, 30.1)
-    print(sim.data)
+    n = 1000
+    sim.simulate_population(n, 30.1, 30, 1)
+
+    x = 0
+    for person in sim.data:
+        if "DCIS" in person["state"] or "localized" in person["state"] or "regional" in person["state"] or "distant" in person["state"]:
+            x += 1
+    y = 0
+    for person in sim.data:
+        if "dead - cancer" in person["state"]:
+            y += 1
+    
+    
+    print(f"{(x/n)*100:.2f}% got cancer")
+    print(f"{(y/n)*100:.2f}% died from cancer")
     
 
+    
