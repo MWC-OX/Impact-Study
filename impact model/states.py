@@ -36,7 +36,8 @@ class state:
         self.time_in_state = 0
         self.age = age  # Age of the person
         self.life_table_data = life_table_data  # Life table data for mortality probabilities
-        self.in_recovery = -1
+        self.self_detect = 0
+        self.screen_detect = 0
 
     # Returns current state
     def get_current_state(self):
@@ -55,6 +56,7 @@ class state:
 
         if due_screening and self.state in ["DCIS", "localized", "regional", "distant"]:
             self.state += " - detected"
+            self.screen_detect += 1
 
         # Logic to check state
         if self.state == "healthy":
@@ -160,8 +162,24 @@ class state:
             survival_probability = survival_probabilities[cancer_type][-1]
 
         # Predict mortality
+        BASE_RATE = 0.4
         if random.random() > survival_probability:
             self.state = "dead - cancer"
+        elif self.state == "localized": # detection if surived
+            if random.random() < BASE_RATE:
+                self.state += " - detected"
+                self.self_detect += 1
+        elif self.state == "regional":
+            if random.random() < 2*BASE_RATE:
+                self.state += " - detected"
+                self.self_detect += 1
+        elif self.state == "distant":
+            if random.random() < 2.5*BASE_RATE:
+                self.state += " - detected"
+                self.self_detect += 1
+        else:
+            pass
+
 
     def _state_detected(self):
 

@@ -25,6 +25,8 @@ class Simulator:
 
         result["age"].append(subject.age)
         result["state"].append(subject.get_state())
+        result["self detect"] = subject.state.self_detect
+        result["screen detect"] = subject.state.screen_detect
         
         result["costs"] = subject.b_cancer_costs
 
@@ -39,7 +41,7 @@ class Simulator:
         for x in range(n):
             self.simulate_person(upper, lower, dt)
 
-            if x % 100 == 0:
+            if x % 100 == 0 and x != 0:
                 print(f"Simulated {x} people")
 
         print(f"Simulation completed in {time() - tic:.2f} seconds")
@@ -50,21 +52,21 @@ class Simulator:
 
 if __name__ == "__main__":
     sim = Simulator()
-    n = 1000
-    sim.simulate_population(n, 30.1, 30, 1)
-
-    x = 0
-    for person in sim.data:
-        if "DCIS" in person["state"] or "localized" in person["state"] or "regional" in person["state"] or "distant" in person["state"]:
-            x += 1
+    n = 5000
+    sim.simulate_population(n, 30.1, 29.9, 1)
     y = 0
-    for person in sim.data:
-        if "dead - cancer" in person["state"]:
+    screen = 0
+    self = 0
+    for x in sim.data:
+        screen += x["screen detect"]
+        self += x["self detect"]
+        if "dead - cancer" in x["state"]:
             y += 1
-    
-    
-    print(f"{(x/n)*100:.2f}% got cancer")
-    print(f"{(y/n)*100:.2f}% died from cancer")
+
+    print(f"{(self/(self+screen))*100:.2f}% of cancer cases self detected (n={self+screen})")
+    print(f"{(y/n)*100:.2f}% die of breast cancer")
+
+
     
 
     

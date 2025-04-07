@@ -169,7 +169,7 @@ class Person:
                  "num_first_degree_relatives": self.relatives
                  }
         due_screen = self.age >= 50 and (self.age - 50) % 3 == 0
-        
+
         self.state.check_transistion(risks, self.age, due_screen ,dt)
     
 
