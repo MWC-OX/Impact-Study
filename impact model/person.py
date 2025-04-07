@@ -168,8 +168,9 @@ class Person:
                  "age_at_first_birth": self.chld_b, 
                  "num_first_degree_relatives": self.relatives
                  }
+        due_screen = self.age >= 50 and (self.age - 50) % 3 == 0
         
-        self.state.check_transistion(risks, self.age, dt)
+        self.state.check_transistion(risks, self.age, due_screen ,dt)
     
 
 if __name__ == "__main__":

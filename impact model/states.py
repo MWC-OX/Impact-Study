@@ -18,6 +18,10 @@ class state:
         "localized",
         "regional",
         "distant",
+        "DCIS - detected",
+        "localized - detected",
+        "regional - detected",
+        "distant - detected",
         "dead - cancer",
         "dead - other",
     ]
@@ -32,6 +36,7 @@ class state:
         self.time_in_state = 0
         self.age = age  # Age of the person
         self.life_table_data = life_table_data  # Life table data for mortality probabilities
+        self.in_recovery = -1
 
     # Returns current state
     def get_current_state(self):
@@ -39,7 +44,7 @@ class state:
 
     # Ran after aging people
     # should take all relevant risk factors as arguments
-    def check_transistion(self, risks, age, dt=1):
+    def check_transistion(self, risks, age, due_screening, dt=1):
 
                 # used for checking if state changes
         current = self.state
@@ -47,6 +52,9 @@ class state:
         # increases spent time in current state
         self.time_in_state += dt
         self.age = age  # Increment age by the time step
+
+        if due_screening and self.state in ["DCIS", "localized", "regional", "distant"]:
+            self.state += " - detected"
 
         # Logic to check state
         if self.state == "healthy":
@@ -59,6 +67,8 @@ class state:
             self._cancerous_invasive("regional")
         elif self.state == "distant":
             self._cancerous_invasive("distant")
+        elif self.state in [ "DCIS - detected", "localized - detected", "regional - detected", "distant - detected"]:
+            self._state_detected()
         elif self.state == "dead - cancer" or self.state == "dead - other":
             pass  # No transition from dead states
         else:
@@ -76,10 +86,10 @@ class state:
     def _check_dead_other(self):
         # Ensure age is within the bounds of the life table
         if self.age >= len(self.life_table_data):
-            return False  # No data for ages beyond the life table
-
-        # Get the probability of dying from other causes at the current age
-        mortality_probability = self.life_table_data[int(self.age)]
+              mortality_probability = self.life_table_data[-1]
+        else:
+            # Get the probability of dying from other causes at the current age
+            mortality_probability = self.life_table_data[int(self.age)]
 
         # Generate a random number to decide if the person dies
         return random.random() < mortality_probability
@@ -152,4 +162,26 @@ class state:
         # Predict mortality
         if random.random() > survival_probability:
             self.state = "dead - cancer"
+
+    def _state_detected(self):
+
+        # check progression / death
+        if self.state != "DCIS - detected":
+            self._cancerous_invasive(self.state[:-11])
+        else:
+            self._state_DCIS()
+            if self.state != "DCIS - detected": # ensures still deteted in progressed
+                self.state += " - detected"
+
+        # if been ill for year most likely cured
+        if self.time_in_state > 0 and self.state not in ["dead - cancer", "dead - other"]:
+            if self.state != "distant - detected":
+                if random.random() < 0.95:
+                    self.state = "healthy"
+            else:
+                if random.random() < 0.5:
+                    self.state = "healthy"
+
+
+
 
