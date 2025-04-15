@@ -33,16 +33,31 @@ class Simulator:
         self.data.append(result)
 
 
-    def simulate_population(self, n, age, scheme, dt):
+    def simulate_population(self, n, age, scheme, dt, only_cancer):
+
+        def has_cancer(states):
+            cancer_states = {"DCIS", "localized", "regional", "distant", 
+                     "DCIS - detected", "localized - detected", 
+                     "regional - detected", "distant - detected", 
+                     "dead - cancer"}
+            return any(state in cancer_states for state in states)
 
         self.clear_data()
+        printed = False
         tic = time()
 
-        for x in range(n):
+        while len(self.data) < n:
             self.simulate_person(age, scheme, dt)
+            if only_cancer and not has_cancer(self.data[-1]["state"]):
+                self.data.pop()
+            else:
+                printed = False
 
-            if x % 100 == 0 and x != 0:
-                print(f"Simulated {x} people")
+            if len(self.data) % 100 == 0 and len(self.data) != 0 and not only_cancer:
+                print(f"Simulated {len(self.data)} people")
+            if len(self.data) % 10 == 0 and len(self.data) != 0 and only_cancer and not printed:
+                printed = True
+                print(f"Simulated {len(self.data)} people")
 
         print(f"Simulation completed in {time() - tic:.2f} seconds")
         return self.data

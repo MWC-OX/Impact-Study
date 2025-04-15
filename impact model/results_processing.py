@@ -24,18 +24,19 @@ cost = {
     "regional - detected": 7613,
     "distant - detected": 13330
 }
+
 # risk_level: [age_first_screening, screen_frequency]
 screen_scheme = {
     1: [50, 3],
     2: [50, 3],
-    3: [50, 3],
-    4: [50, 3]
+    3: [30, 3],
+    4: [30, 3]
 }
 
 if __name__ == "__main__":
     sim = Simulator()
-    n = 1000  # Number of people to simulate
-    sim.simulate_population(n, 30, screen_scheme, 1)
+    n = 200  # Number of people to simulate
+    sim.simulate_population(n, 30, screen_scheme, 1, True)
 
     total_qalys = 0
     total_cost = 0
