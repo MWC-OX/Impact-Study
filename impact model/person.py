@@ -1,6 +1,8 @@
 import numpy as np
 from states import state
 from life_table_data import death_p
+from dtree import classifier
+from BCSC_encoder import encode_inputs
 
 def generate_age(lower, upper):
     return round(np.random.uniform(low=lower, high=upper))
@@ -109,24 +111,31 @@ def generate_relatives():
 
 def generate_HRT(menopause):
 
-    # https://pmc.ncbi.nlm.nih.gov/articles/PMC5198659/
     # https://www.gov.uk/government/news/hundreds-of-thousands-of-women-experiencing-menopause-symptoms-to-get-cheaper-hormone-replacement-therapy
-    CHANCE = 15 # 15%
+    # https://www.nhs.uk/medicines/hormone-replacement-therapy-hrt/when-to-take-hormone-replacement-therapy-hrt/
+    CHANCE = 14.6 # 15% * 98%
 
     # if women menopuase prematurely they should be on HRT until 51 by NICE guidelines
-    if menopause < 51:
+    if menopause <= 45:
         return 51 - menopause
     
     if np.random.uniform(low=0, high=100) > CHANCE:
         return 0
-    return np.random.uniform(low=2, high=6) # most women in this range so pick at random
+    return np.random.uniform(low=2, high=5) # most women in this range so pick at random
+
+def generate_surmeno():
+    # https://pmc.ncbi.nlm.nih.gov/articles/PMC9433845/
+    CHANCE = 9.8
+    if np.random.uniform(low=0, high=100) < CHANCE:
+        return True
+    return False
 
 
 class Person:
 
     def __init__(
             self, age, menopause, menarche,
-            ethn, chld_b, hrt, bcra1, bcra2, relatives
+            ethn, chld_b, hrt, relatives, bmi20, bmi50, bmi80
         ):
         self.age = age # done
         self.menopause = menopause # done
@@ -134,31 +143,52 @@ class Person:
         self.ethn = ethn # done
         self.chld_b = chld_b # done
         self.hrt = hrt # done
-        self.bcra1 = bcra1 # done
-        self.bcra2 = bcra2 # done
         self.relatives = relatives #done
         self.biopsies = 0
-        self.b_cancer_costs = 0
+        self.procedures = 0
+        self.density = 1 # do
+        self.surmeno = generate_surmeno()
+        self.bmi20 = bmi20
+        self.bmi50 = bmi50
+        self.bmi80 = bmi80
+        self.screen_cost = 0
+        self.risk_level = 1
         self.state = state(self.age, death_p())
+        self.classifier = classifier()
     
     @classmethod
-    def generate_person(cls, lower, upper):
-        age = generate_age(lower, upper)
+    def generate_person(cls, age):
         menopause = generate_menopause()
         menarche = generate_menarche()
         ethnicity = generate_ethnicity()
-        brca1 = generate_bcra(1, ethnicity)
-        brca2 = generate_bcra(2, ethnicity)
         relatives = generate_relatives()
         chld_b = generate_childbirth()
         hrt = generate_HRT(menopause)
-        return cls(age, menopause, menarche, ethnicity, chld_b, hrt, brca1, brca2, relatives)
+        # avg from https://digital.nhs.uk/data-and-information/publications/statistical/health-survey-for-england/2022-part-2
+        #std from https://www.researchgate.net/publication/306049161_Eating_patterns_and_prevalence_of_obesity_Lessons_learned_from_the_Malaysian_Food_Barometer
+        bmi50 = np.random.normal(28.4, 4.572)
+        bmi20 = np.random.normal(24.9, 4.572)
+        bmi80 = np.random.normal(27.5, 4.572)
+        return cls(age, menopause, menarche, ethnicity, chld_b, hrt, relatives, bmi20, bmi50, bmi80)
 
     def get_state(self):
         return self.state.state
 
     def is_menopausal(self):
-        return self.age > self.menopause
+        return self.age >= self.menopause
+    
+    def on_hrt(self):
+        return self.age >= self.menopause and self.age <= self.menopause + self.hrt
+    
+    def get_bmi(self):
+        if self.age <= 20:
+            return self.bmi20
+        elif self.age >= 80:
+            return self.bmi80
+        elif self.age <= 50:
+            return self.bmi20 + (self.bmi50 - self.bmi20) * ((self.age - 20) / (50 - 20))
+        else:
+            return self.bmi50 + (self.bmi80 - self.bmi50) * ((self.age - 50) / (80 - 50))
     
     def tic(self, dt=1):
         self.age += dt
@@ -168,9 +198,42 @@ class Person:
                  "age_at_first_birth": self.chld_b, 
                  "num_first_degree_relatives": self.relatives
                  }
-        due_screen = self.age >= 50 and (self.age - 50) % 3 == 0
+        
+        due_screen = self.check_screen()
+        if due_screen and np.random.uniform(0, 100) < 70:
+            self.screen_cost += 57.69
+        else:
+            dur_screen = False
 
-        self.state.check_transistion(risks, self.age, due_screen ,dt)
+        self.state.check_transistion(risks, self.age, due_screen, dt)
+
+    def check_screen(self):
+        risks = {
+            1: [50, 3],
+            2: [50, 3],
+            3: [50, 3],
+            4: [50, 3]
+        }
+
+        risk_data = encode_inputs(
+            self.is_menopausal(),
+            self.age,
+            self.density,
+            self.ethn,
+            self.get_bmi(),
+            self.chld_b,
+            self.relatives,
+            self.procedures,
+            False,
+            self.surmeno,
+            self.on_hrt()
+        )
+
+        catagory = self.classifier.risk_prediction(risk_data)
+        self.risk_level = catagory
+
+        return (self.age - risks[catagory][0]) % risks[catagory][1] == 0 and self.age >= risks[catagory][0]
+
     
 
 if __name__ == "__main__":

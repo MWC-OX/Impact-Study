@@ -7,9 +7,9 @@ class Simulator:
         self.data = []
 
 
-    def simulate_person(self, upper=80, lower=20, dt=1):
+    def simulate_person(self, age, dt=1):
 
-        subject = Person.generate_person(upper, lower)
+        subject = Person.generate_person(age)
         result = {"age": [], "state": [], "risk score": [], "bmi": []}
 
         result["race"] = subject.ethn
@@ -18,7 +18,7 @@ class Simulator:
 
             result["age"].append(subject.age)
             result["state"].append(subject.get_state())
-            # result["risk score"].append(subject.get_risk_score())
+            result["risk score"].append(subject.risk_level)
             # result["bmi"].append(subject.get_bmi())
 
             subject.tic(dt)
@@ -28,7 +28,7 @@ class Simulator:
         result["self detect"] = subject.state.self_detect
         result["screen detect"] = subject.state.screen_detect
         
-        result["costs"] = subject.b_cancer_costs
+        result["screen costs"] = subject.screen_cost
 
         self.data.append(result)
 
@@ -39,7 +39,7 @@ class Simulator:
         tic = time()
 
         for x in range(n):
-            self.simulate_person(upper, lower, dt)
+            self.simulate_person(30, dt)
 
             if x % 100 == 0 and x != 0:
                 print(f"Simulated {x} people")
@@ -52,8 +52,8 @@ class Simulator:
 
 if __name__ == "__main__":
     sim = Simulator()
-    n = 5000
-    sim.simulate_population(n, 30.1, 29.9, 1)
+    n = 100
+    sim.simulate_population(n, 30, 1)
     y = 0
     screen = 0
     self = 0

@@ -161,11 +161,11 @@ class state:
             # Use the last available survival probability for years beyond the data
             survival_probability = survival_probabilities[cancer_type][-1]
 
-        # Predict mortality
+        # Predict mortality https://pmc.ncbi.nlm.nih.gov/articles/PMC3153870/
         BASE_RATE = 0.4
         if random.random() > survival_probability:
             self.state = "dead - cancer"
-        elif self.state == "localized": # detection if surived
+        elif self.state == "localized": # detection if surived 
             if random.random() < BASE_RATE:
                 self.state += " - detected"
                 self.self_detect += 1
@@ -197,7 +197,7 @@ class state:
                 if random.random() < 0.95:
                     self.state = "healthy"
             else:
-                if random.random() < 0.5:
+                if random.random() < 0.8:
                     self.state = "healthy"
 
 
