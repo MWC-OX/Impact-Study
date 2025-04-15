@@ -135,7 +135,7 @@ class Person:
 
     def __init__(
             self, age, menopause, menarche,
-            ethn, chld_b, hrt, relatives, bmi20, bmi50, bmi80
+            ethn, chld_b, hrt, relatives, bmi20, bmi50, bmi80, scheme
         ):
         self.age = age # done
         self.menopause = menopause # done
@@ -153,11 +153,12 @@ class Person:
         self.bmi80 = bmi80
         self.screen_cost = 0
         self.risk_level = 1
+        self.risks = scheme
         self.state = state(self.age, death_p())
         self.classifier = classifier()
     
     @classmethod
-    def generate_person(cls, age):
+    def generate_person(cls, age, scheme):
         menopause = generate_menopause()
         menarche = generate_menarche()
         ethnicity = generate_ethnicity()
@@ -169,7 +170,7 @@ class Person:
         bmi50 = np.random.normal(28.4, 4.572)
         bmi20 = np.random.normal(24.9, 4.572)
         bmi80 = np.random.normal(27.5, 4.572)
-        return cls(age, menopause, menarche, ethnicity, chld_b, hrt, relatives, bmi20, bmi50, bmi80)
+        return cls(age, menopause, menarche, ethnicity, chld_b, hrt, relatives, bmi20, bmi50, bmi80, scheme)
 
     def get_state(self):
         return self.state.state
@@ -208,12 +209,7 @@ class Person:
         self.state.check_transistion(risks, self.age, due_screen, dt)
 
     def check_screen(self):
-        risks = {
-            1: [50, 3],
-            2: [50, 3],
-            3: [50, 3],
-            4: [50, 3]
-        }
+
 
         risk_data = encode_inputs(
             self.is_menopausal(),
@@ -232,7 +228,7 @@ class Person:
         catagory = self.classifier.risk_prediction(risk_data)
         self.risk_level = catagory
 
-        return (self.age - risks[catagory][0]) % risks[catagory][1] == 0 and self.age >= risks[catagory][0]
+        return (self.age - self.risks[catagory][0]) % self.risks[catagory][1] == 0 and self.age >= self.risks[catagory][0]
 
     
 
